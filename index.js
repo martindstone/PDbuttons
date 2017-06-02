@@ -164,7 +164,9 @@ app.post('/allhands', function (req, res) {
 	requesterID = req.query.requester_id || message.log_entries[0].agent.id;
 	
 	req.body.messages.forEach(function(message) {
-		getEP(message.incident.escalation_policy.id, requesterID, message.incident.id, message.incident.title);
+		if ( message.event == "incident.custom" || message.event == "incident.trigger" ) {
+			getEP(message.incident.escalation_policy.id, requesterID, message.incident.id, message.incident.title);	
+		}
 	});
 	res.end();
 });
