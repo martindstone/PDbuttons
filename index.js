@@ -161,9 +161,10 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 
 app.post('/allhands', function (req, res) {
 	token = req.query.token;
+	requesterID = req.query.requester_id || message.log_entries[0].agent.id;
 	
 	req.body.messages.forEach(function(message) {
-		getEP(message.incident.escalation_policy.id, message.log_entries[0].agent.id, message.incident.id, message.incident.title);
+		getEP(message.incident.escalation_policy.id, requesterID, message.incident.id, message.incident.title);
 	});
 	res.end();
 });
