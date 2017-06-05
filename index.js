@@ -166,14 +166,15 @@ app.post('/allhands', function (req, res) {
 	req.body.messages.forEach(function(message) {
 
 		try {
-			console.log('***** ' + message.log_entries[0].agent.type);
-			requesterID = message.log_entries[0].agent.id;
+			if ( message.log_entries[0].agent.type == 'user_reference' ) {
+				requesterID = message.log_entries[0].agent.id;				
+			}
 		}
 		catch (e) {
 		}
 		
-		if ( requesterID == null || requesterID == '' ) { 
-			requesterID = req.query.requester_id
+		if ( ! requesterID ) { 
+			requesterID = req.query.requester_id;
 		}
 
 		if ( message.event == "incident.custom" || message.event == "incident.trigger" ) {
