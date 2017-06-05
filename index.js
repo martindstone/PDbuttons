@@ -160,7 +160,7 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 }
 
 app.post('/allhands', function (req, res) {
-	var token = req.query.token;
+	token = req.query.token;
 	var requesterID;
 	
 	req.body.messages.forEach(function(message) {
