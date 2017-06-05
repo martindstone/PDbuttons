@@ -160,10 +160,18 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 }
 
 app.post('/allhands', function (req, res) {
-	token = req.query.token;
-	requesterID = req.query.requester_id || message.log_entries[0].agent.id;
+	var token = req.query.token;
+	var requesterID;
 	
 	req.body.messages.forEach(function(message) {
+
+		try {
+			requesterID = message.log_entries[0].agent.id;
+		}
+		catch (e) {
+			requesterID = req.query.requester_id
+		}
+
 		if ( message.event == "incident.custom" || message.event == "incident.trigger" ) {
 			getEP(message.incident.escalation_policy.id, requesterID, message.incident.id, message.incident.title);	
 		}
