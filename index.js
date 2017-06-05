@@ -166,6 +166,7 @@ app.post('/allhands', function (req, res) {
 	req.body.messages.forEach(function(message) {
 
 		try {
+			console.log('***** ' + message.log_entries[0].agent.type);
 			requesterID = message.log_entries[0].agent.id;
 		}
 		catch (e) {
