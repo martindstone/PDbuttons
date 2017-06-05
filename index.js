@@ -169,6 +169,9 @@ app.post('/allhands', function (req, res) {
 			requesterID = message.log_entries[0].agent.id;
 		}
 		catch (e) {
+		}
+		
+		if ( requesterID == null || requesterID == '' ) { 
 			requesterID = req.query.requester_id
 		}
 
