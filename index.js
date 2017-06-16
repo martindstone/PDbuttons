@@ -15,6 +15,13 @@ var pdRequest = request.defaults({
 	}
 });
 
+var message_type_strings = {
+	'incident.trigger': 'triggered',
+	'incident.acknowledge': 'acknowledged',
+	'incident.escalate': 'escalated',
+	'incident.resolve': 'resolved'
+};
+
 var AWS = require('aws-sdk');
 
 
@@ -148,8 +155,6 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 		json: body
 	};
 	
-	console.log("---\n" + JSON.stringify(body, null, 4) + "\n---");
-
 	request(options, function(error, response, body) {
 		if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 			console.log("Error adding responders: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
@@ -256,6 +261,46 @@ app.post('/awsreboot', function(req, res) {
 
 	res.end();
 
+});
+
+app.post('/whatsapp', function(req, res) {
+	var instance_id = req.query.instance_id;
+	var client_id = decodeURIComponent(req.query.client_id);
+	var client_secret = req.query.client_secret;
+	var group_admin = req.query.group_admin;
+	var group_name = req.query.group_name;
+	var url = 'http://api.whatsmate.net/v2/whatsapp/group/message/' + instance_id;
+	
+	var headers = {
+		'Content-Type': 'application/json',
+		'X-WM-CLIENT-ID': client_id,
+		'X-WM-CLIENT-SECRET': client_secret
+	};
+	
+	var message = req.body.messages[0];
+	
+	var wa_message = "Incident #" + message.incident.incident_number + " was " + message_type_strings[message.event] + " by " + message.incident.last_status_change_by + " on service "  + message.incident.service.name + ". View the incident at " + message.incident.html_url;
+	
+	var body = {
+		'group_admin': group_admin,
+		'group_name': group_name,
+		'messsage': wa_message
+	};
+	
+	var options = {
+		headers: headers,
+		uri: url,
+		method: 'POST',
+		json: body
+	};
+	
+	request(options, function(error, response, body) {
+		if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+			console.log("Error sending WA message: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+		} else {
+			console.log("Sent WA message: " + JSON.stringify(response, null, 2));
+		}
+	});	
 });
 
 
