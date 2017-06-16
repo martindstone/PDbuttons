@@ -284,7 +284,7 @@ app.post('/whatsapp', function(req, res) {
 	var body = {
 		'group_admin': group_admin,
 		'group_name': group_name,
-		'messsage': wa_message
+		'message': wa_message
 	};
 	
 	var options = {
