@@ -300,7 +300,9 @@ app.post('/whatsapp', function(req, res) {
 		} else {
 			console.log("Sent WA message: " + JSON.stringify(response, null, 2));
 		}
-	});	
+	});
+	
+	res.end();
 });
 
 
