@@ -268,7 +268,7 @@ app.post('/whatsapp', function(req, res) {
 	var client_id = decodeURIComponent(req.query.client_id);
 	var client_secret = req.query.client_secret;
 	var group_admin = req.query.group_admin;
-	var group_name = req.query.group_name;
+	var group_name = decodeURIComponent(req.query.group_name);
 	var url = 'http://api.whatsmate.net/v2/whatsapp/group/message/' + instance_id;
 	
 	var headers = {
