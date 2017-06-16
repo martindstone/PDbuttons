@@ -19,7 +19,10 @@ var message_type_strings = {
 	'incident.trigger': 'triggered',
 	'incident.acknowledge': 'acknowledged',
 	'incident.escalate': 'escalated',
-	'incident.resolve': 'resolved'
+	'incident.resolve': 'resolved',
+	'incident.unacknowledge': 'unacknowledged',
+	'incident.assign': 'reassigned',
+	'incident.delegate': 'delegated'
 };
 
 var AWS = require('aws-sdk');
