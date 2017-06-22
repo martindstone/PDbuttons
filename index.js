@@ -282,12 +282,12 @@ app.post('/whatsapp', function(req, res) {
 	
 	var message = req.body.messages[0];
 	
-	var wa_message = 'Incident "' + message.incident.summary + '" was ' + message_type_strings[message.event] + ' by ' + message.incident.last_status_change_by.summary + ' on service '  + message.incident.service.name + '. View the incident at ' + message.incident.html_url;
-	
+	var wa_message = 'Incident "' + message.incident.summary + '\n" was ' + message_type_strings[message.event] + '\n by ' + message.incident.last_status_change_by.summary + '\n on service '  + message.incident.service.name + '. View the incident at ' + message.incident.html_url;
+    var wa_encoded_message = encodeURIComponent(wa_message)
 	var body = {
 		'group_admin': group_admin,
 		'group_name': group_name,
-		'message': wa_message
+		'message': wa_encoded_message
 	};
 	
 	var options = {
