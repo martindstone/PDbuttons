@@ -325,8 +325,10 @@ app.post('/whatsapp2', function(req, res) {
 	};
 	
 	var message = req.body.messages[0];
+	var wa_message_summary = message.incident.summary.replace(/\\n/, '\n');
 	
-	var wa_message = 'Incident Title: ' + message.incident.summary.replace(/\\n/, '\n') + '\nEvent: ' + message_type_strings[message.event] + '\nBy: ' + message.incident.last_status_change_by.summary + '\nService: '  + message.incident.service.name + '\nURL: ' + message.incident.html_url;
+	console.log(message.incident.summary + ' ==> ' + wa_message_summary);
+	var wa_message = 'Incident Title: ' + wa_message_summary + '\nEvent: ' + message_type_strings[message.event] + '\nBy: ' + message.incident.last_status_change_by.summary + '\nService: '  + message.incident.service.name + '\nURL: ' + message.incident.html_url;
 	
 	var body = {
 		'group_admin': group_admin,
