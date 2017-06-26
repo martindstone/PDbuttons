@@ -284,7 +284,7 @@ app.post('/whatsapp', function(req, res) {
 	var message = req.body.messages[0];
 	var wa_message_summary = message.incident.summary.replace(/\\n/g, '\n');
 
-	var wa_message = 'Incident Title: ' + wa_message_summary + '\nEvent: ' + message_type_strings[message.event] + '\nBy: ' + message.incident.last_status_change_by.summary + '\nService: '  + message.incident.service.name + '\nURL: ' + message.incident.html_url;
+	var wa_message = '*Incident Title:* ' + wa_message_summary + '\n*Event:* ' + message_type_strings[message.event] + '\n*By:* ' + message.incident.last_status_change_by.summary + '\n*Service:* '  + message.incident.service.name + '\n*URL:* ' + message.incident.html_url;
 	
 	var body = {
 		'group_admin': group_admin,
