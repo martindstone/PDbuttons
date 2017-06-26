@@ -309,6 +309,51 @@ app.post('/whatsapp', function(req, res) {
 });
 
 
+
+app.post('/whatsapp2', function(req, res) {
+	var instance_id = req.query.instance_id;
+	var client_id = decodeURIComponent(req.query.client_id);
+	var client_secret = req.query.client_secret;
+	var group_admin = req.query.group_admin;
+	var group_name = decodeURIComponent(req.query.group_name);
+	var url = 'http://api.whatsmate.net/v2/whatsapp/group/message/' + instance_id;
+	
+	var headers = {
+		'Content-Type': 'application/json',
+		'X-WM-CLIENT-ID': client_id,
+		'X-WM-CLIENT-SECRET': client_secret
+	};
+	
+	var message = req.body.messages[0];
+	
+	var wa_message = 'Incident Title: ' + message.incident.summary + '\nEvent: ' + message_type_strings[message.event] + '\nBy: ' + message.incident.last_status_change_by.summary + '\nService: '  + message.incident.service.name + '\nURL: ' + message.incident.html_url;
+	
+	var body = {
+		'group_admin': group_admin,
+		'group_name': group_name,
+		'message': wa_message
+	};
+	
+	var options = {
+		headers: headers,
+		uri: url,
+		method: 'POST',
+		json: body
+	};
+	
+	request(options, function(error, response, body) {
+		if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+			console.log("Error sending WA message: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+		} else {
+			console.log("Sent WA message: " + JSON.stringify(response, null, 2));
+		}
+	});
+	
+	res.end();
+});
+
+
+
 app.listen(app.get('port'), function() {
 	console.log('PDbutton listening on port', app.get('port'));
 });
