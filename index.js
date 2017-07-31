@@ -314,9 +314,27 @@ app.post('/whatsapp', function(req, res) {
 app.post('/pingdom', function(req, res) {
 
 	var incident = req.body.messages[0].incident;
+	var token = req.query.tokem;
+	var pingdom_token = req.query.pingdom_token;
 
 	getTriggerLE(req.query.token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log(logEntry);
+		
+		var options = {
+			headers: { 
+				App-Key: pingdom_token
+			},
+			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key,
+			method: "GET"
+		};
+		
+		request(options, function(error, response, body) {
+			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+			} else {
+				console.log(JSON.stringify(response, null, 4)));
+			}
+		});	
 	});
 
 	res.end();
