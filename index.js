@@ -314,13 +314,19 @@ app.post('/whatsapp', function(req, res) {
 app.post('/pingdom', function(req, res) {
 
 	var incident = req.body.messages[0].incident;
-	var token = req.query.tokem;
+	var token = req.query.token;
+	var pingdom_user = req.query.pingdom_user;
+	var pingdom_pass = req.query.pingdom_pass;
 	var pingdom_token = req.query.pingdom_token;
-
-	getTriggerLE(req.query.token, incident.first_trigger_log_entry.self, function(logEntry) {
+	
+	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log(logEntry);
 		
 		var options = {
+			auth: {
+				user: pingdom_user,
+				pass: pingdom_pass
+			},
 			headers: { 
 				"App-Key": pingdom_token
 			},
