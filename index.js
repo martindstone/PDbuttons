@@ -313,12 +313,15 @@ app.post('/whatsapp', function(req, res) {
 
 app.post('/pingdom', function(req, res) {
 
+	var action = req.query.action;
 	var incident = req.body.messages[0].incident;
 	var token = req.query.token;
+	var user = req.query.user;
 	var pingdom_user = req.query.pingdom_user;
 	var pingdom_pass = req.query.pingdom_pass;
 	var pingdom_token = req.query.pingdom_token;
 	
+
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log(logEntry);
 		
@@ -330,7 +333,7 @@ app.post('/pingdom', function(req, res) {
 			headers: { 
 				"App-Key": pingdom_token
 			},
-			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key + "?paused=true",
+			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key + "?" + pingdom_args,
 			method: "PUT"
 		};
 		
@@ -339,6 +342,20 @@ app.post('/pingdom', function(req, res) {
 				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 			} else {
 				console.log(JSON.stringify(response, null, 4));
+				var pingdom_args, note;
+				if ( action == "pause" || req.body.messages[0].type == 'incident.acknowledge' ) {
+					pingdom_args = "paused=true";
+					note = "Paused check " + logEntry.log_entry.channel.incident_key + ". Will unpause when the incident is resolved.";
+				} else if ( action == "unpause" || req.body.messages[0].type == 'incident.resolve' ) {
+					pingdom_args = "paused=false";
+					note = "Unpaused check " + logEntry.log_entry.channel.incident_key;
+				} else {
+					res.end();
+					return;
+				}
+				if ( user ) {
+					addNote(token, incident.self, user, note);
+				}
 			}
 		});	
 	});
