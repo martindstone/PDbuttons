@@ -311,6 +311,12 @@ app.post('/whatsapp', function(req, res) {
 });
 
 
+app.post('/pingdom', function(req, res) {
+	var message = req.body;
+	console.log(JSON.stringify(message, null, 4));
+});
+
+
 
 app.listen(app.get('port'), function() {
 	console.log('PDbutton listening on port', app.get('port'));
