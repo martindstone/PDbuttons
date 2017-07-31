@@ -330,8 +330,8 @@ app.post('/pingdom', function(req, res) {
 			headers: { 
 				"App-Key": pingdom_token
 			},
-			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key,
-			method: "GET"
+			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key + "?paused=true",
+			method: "PUT"
 		};
 		
 		request(options, function(error, response, body) {
