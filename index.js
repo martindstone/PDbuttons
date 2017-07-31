@@ -312,8 +312,13 @@ app.post('/whatsapp', function(req, res) {
 
 
 app.post('/pingdom', function(req, res) {
-	var message = req.body;
-	console.log(JSON.stringify(message, null, 4));
+
+	var incident = req.body.messages[0].incident;
+
+	getTriggerLE(req.query.token, incident.first_trigger_log_entry.self, function(logEntry) {
+		console.log(logEntry);
+	});
+
 	res.end();
 });
 
