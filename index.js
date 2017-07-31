@@ -332,7 +332,7 @@ app.post('/pingdom', function(req, res) {
 			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 			} else {
-				console.log(JSON.stringify(response, null, 4)));
+				console.log(JSON.stringify(response, null, 4));
 			}
 		});	
 	});
