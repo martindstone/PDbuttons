@@ -324,9 +324,9 @@ app.post('/pingdom', function(req, res) {
 
 	console.log(req.body);
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
-		console.log("event type: " + req.body.messages[0].type);
+		console.log("event type: " + req.body.messages[0].event);
 		var pingdom_args, note;
-		if ( action == "pause" || req.body.messages[0].type == 'incident.acknowledge' ) {
+		if ( action == "pause" || req.body.messages[0].event == 'incident.acknowledge' ) {
 			pingdom_args = "paused=true";
 			note = "Paused check " + logEntry.log_entry.channel.incident_key + ". Will unpause when the incident is resolved.";
 		} else if ( action == "unpause" || req.body.messages[0].type == 'incident.resolve' ) {
