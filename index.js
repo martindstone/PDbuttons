@@ -322,7 +322,7 @@ app.post('/pingdom', function(req, res) {
 		
 		var options = {
 			headers: { 
-				App-Key: pingdom_token
+				"App-Key": pingdom_token
 			},
 			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key,
 			method: "GET"
