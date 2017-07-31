@@ -324,7 +324,18 @@ app.post('/pingdom', function(req, res) {
 
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log(logEntry);
-		
+		var pingdom_args, note;
+		if ( action == "pause" || req.body.messages[0].type == 'incident.acknowledge' ) {
+			pingdom_args = "paused=true";
+			note = "Paused check " + logEntry.log_entry.channel.incident_key + ". Will unpause when the incident is resolved.";
+		} else if ( action == "unpause" || req.body.messages[0].type == 'incident.resolve' ) {
+			pingdom_args = "paused=false";
+			note = "Unpaused check " + logEntry.log_entry.channel.incident_key;
+		} else {
+			res.end();
+			return;
+		}
+
 		var options = {
 			auth: {
 				user: pingdom_user,
@@ -342,17 +353,6 @@ app.post('/pingdom', function(req, res) {
 				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 			} else {
 				console.log(JSON.stringify(response, null, 4));
-				var pingdom_args, note;
-				if ( action == "pause" || req.body.messages[0].type == 'incident.acknowledge' ) {
-					pingdom_args = "paused=true";
-					note = "Paused check " + logEntry.log_entry.channel.incident_key + ". Will unpause when the incident is resolved.";
-				} else if ( action == "unpause" || req.body.messages[0].type == 'incident.resolve' ) {
-					pingdom_args = "paused=false";
-					note = "Unpaused check " + logEntry.log_entry.channel.incident_key;
-				} else {
-					res.end();
-					return;
-				}
 				if ( user ) {
 					addNote(token, incident.self, user, note);
 				}
