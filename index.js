@@ -194,76 +194,85 @@ app.post('/allhands', function (req, res) {
 
 app.post('/awsconsole', function (req, res) {
 	
-	var incidentTitle = req.body.messages[0].incident.title;
-	var incidentURL = req.body.messages[0].incident.self;
-	
-	getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
-		var region = logEntry.log_entry.channel.cef_details.source_location;
-		var instanceID = logEntry.log_entry.channel.cef_details.source_component;
-		var creds = new AWS.Credentials({
-			accessKeyId: req.query.awsAccess,
-			secretAccessKey: req.query.awsSecret
-		});
+	try {
+		var incidentTitle = req.body.messages[0].incident.title;
+		var incidentURL = req.body.messages[0].incident.self;
 		
-		var ec2 = new AWS.EC2({
-			region: region,
-			credentials: creds
+		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
+			var region = logEntry.log_entry.channel.cef_details.source_location;
+			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
+			var creds = new AWS.Credentials({
+				accessKeyId: req.query.awsAccess,
+				secretAccessKey: req.query.awsSecret
+			});
+			
+			var ec2 = new AWS.EC2({
+				region: region,
+				credentials: creds
+			});
+		
+			var params = {
+				InstanceId: instanceID
+			};
+			ec2.getConsoleOutput(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+				} else {
+					var buf = Buffer.from(data.Output, 'base64');
+					var output = buf.toString('ascii');
+					var lines = output.split('\n');
+					var tail = lines.slice(-10);
+					var note = tail.join('\n');
+					note = note.replace(/(.{80})/g, "$1\n");
+					addNote(req.query.token, incidentURL, req.query.fromEmail, note);
+				}
+			});
 		});
-	
-		var params = {
-			InstanceId: instanceID
-		};
-		ec2.getConsoleOutput(params, function(err, data) {
-			if (err) {
-				console.log(err, err.stack);
-			} else {
-				var buf = Buffer.from(data.Output, 'base64');
-				var output = buf.toString('ascii');
-				var lines = output.split('\n');
-				var tail = lines.slice(-10);
-				var note = tail.join('\n');
-				note = note.replace(/(.{80})/g, "$1\n");
-				addNote(req.query.token, incidentURL, req.query.fromEmail, note);
-			}
-		});
-	});
-
-	res.end();
-	
+	}
+	catch (e) {
+		console.log(e.message);
+	}
+	finally {
+		res.end();
+	}
 });
 
 app.post('/awsreboot', function(req, res) {
-
-	var incidentURL = req.body.messages[0].incident.self;
-
-	getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
-		var region = logEntry.log_entry.channel.cef_details.source_location;
-		var instanceID = logEntry.log_entry.channel.cef_details.source_component;
-		var creds = new AWS.Credentials({
-			accessKeyId: req.query.awsAccess,
-			secretAccessKey: req.query.awsSecret
-		});
-		
-		var ec2 = new AWS.EC2({
-			region: region,
-			credentials: creds
-		});
+	try {
+		var incidentURL = req.body.messages[0].incident.self;
 	
-		var params = {
-			InstanceIds: [ instanceID ]
-		};
-		ec2.rebootInstances(params, function(err, data) {
-			if (err) {
-				console.log(err, err.stack);
-			} else {
-				var note = "Reboot requested for instance " + instanceID;
-				addNote(req.query.token, incidentURL, req.query.fromEmail, note);
-			}
+		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
+			var region = logEntry.log_entry.channel.cef_details.source_location;
+			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
+			var creds = new AWS.Credentials({
+				accessKeyId: req.query.awsAccess,
+				secretAccessKey: req.query.awsSecret
+			});
+
+			var ec2 = new AWS.EC2({
+				region: region,
+				credentials: creds
+			});
+		
+			var params = {
+				InstanceIds: [ instanceID ]
+			};
+			ec2.rebootInstances(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+				} else {
+					var note = "Reboot requested for instance " + instanceID;
+					addNote(req.query.token, incidentURL, req.query.fromEmail, note);
+				}
+			});
 		});
-	});
-
-	res.end();
-
+	}
+	catch (e) {
+		console.log(e.message);
+	}
+	finally {
+		res.end();
+	}
 });
 
 
