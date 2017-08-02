@@ -339,11 +339,12 @@ app.post('/pingdom', function(req, res) {
 		if ( action == "pause" || event == 'incident.acknowledge' ) {
 			console.log("pause the check");
 			pingdom_args = "paused=true";
-			note = "Paused check " + logEntry.log_entry.channel.incident_key + ". Will unpause when the incident is resolved.";
+			agent = logEntry.log_entry.agent.summary ? logEntry.log_entry.agent.summary : "unknown";
+			note = "Paused check " + logEntry.log_entry.channel.incident_key + " because the incident was acknowledged by " + agent + ". Will unpause when the incident is resolved.";
 		} else if ( action == "unpause" || event == 'incident.resolve' ) {
 			console.log("unpause the check");
 			pingdom_args = "paused=false";
-			note = "Unpaused check " + logEntry.log_entry.channel.incident_key;
+			note = "Unpaused check " + logEntry.log_entry.channel.incident_key + " because the incident was resolved.";
 		} else {
 			res.end();
 			return;
