@@ -194,77 +194,87 @@ app.post('/allhands', function (req, res) {
 
 app.post('/awsconsole', function (req, res) {
 	
-	var incidentTitle = req.body.messages[0].incident.title;
-	var incidentURL = req.body.messages[0].incident.self;
-	
-	getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
-		var region = logEntry.log_entry.channel.cef_details.source_location;
-		var instanceID = logEntry.log_entry.channel.cef_details.source_component;
-		var creds = new AWS.Credentials({
-			accessKeyId: req.query.awsAccess,
-			secretAccessKey: req.query.awsSecret
-		});
+	try {
+		var incidentTitle = req.body.messages[0].incident.title;
+		var incidentURL = req.body.messages[0].incident.self;
 		
-		var ec2 = new AWS.EC2({
-			region: region,
-			credentials: creds
+		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
+			var region = logEntry.log_entry.channel.cef_details.source_location;
+			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
+			var creds = new AWS.Credentials({
+				accessKeyId: req.query.awsAccess,
+				secretAccessKey: req.query.awsSecret
+			});
+			
+			var ec2 = new AWS.EC2({
+				region: region,
+				credentials: creds
+			});
+		
+			var params = {
+				InstanceId: instanceID
+			};
+			ec2.getConsoleOutput(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+				} else {
+					var buf = Buffer.from(data.Output, 'base64');
+					var output = buf.toString('ascii');
+					var lines = output.split('\n');
+					var tail = lines.slice(-10);
+					var note = tail.join('\n');
+					note = note.replace(/(.{80})/g, "$1\n");
+					addNote(req.query.token, incidentURL, req.query.fromEmail, note);
+				}
+			});
 		});
-	
-		var params = {
-			InstanceId: instanceID
-		};
-		ec2.getConsoleOutput(params, function(err, data) {
-			if (err) {
-				console.log(err, err.stack);
-			} else {
-				var buf = Buffer.from(data.Output, 'base64');
-				var output = buf.toString('ascii');
-				var lines = output.split('\n');
-				var tail = lines.slice(-10);
-				var note = tail.join('\n');
-				note = note.replace(/(.{80})/g, "$1\n");
-				addNote(req.query.token, incidentURL, req.query.fromEmail, note);
-			}
-		});
-	});
-
-	res.end();
-	
+	}
+	catch (e) {
+		console.log(e.message);
+	}
+	finally {
+		res.end();
+	}
 });
 
 app.post('/awsreboot', function(req, res) {
-
-	var incidentURL = req.body.messages[0].incident.self;
-
-	getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
-		var region = logEntry.log_entry.channel.cef_details.source_location;
-		var instanceID = logEntry.log_entry.channel.cef_details.source_component;
-		var creds = new AWS.Credentials({
-			accessKeyId: req.query.awsAccess,
-			secretAccessKey: req.query.awsSecret
-		});
-		
-		var ec2 = new AWS.EC2({
-			region: region,
-			credentials: creds
-		});
+	try {
+		var incidentURL = req.body.messages[0].incident.self;
 	
-		var params = {
-			InstanceIds: [ instanceID ]
-		};
-		ec2.rebootInstances(params, function(err, data) {
-			if (err) {
-				console.log(err, err.stack);
-			} else {
-				var note = "Reboot requested for instance " + instanceID;
-				addNote(req.query.token, incidentURL, req.query.fromEmail, note);
-			}
+		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
+			var region = logEntry.log_entry.channel.cef_details.source_location;
+			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
+			var creds = new AWS.Credentials({
+				accessKeyId: req.query.awsAccess,
+				secretAccessKey: req.query.awsSecret
+			});
+
+			var ec2 = new AWS.EC2({
+				region: region,
+				credentials: creds
+			});
+		
+			var params = {
+				InstanceIds: [ instanceID ]
+			};
+			ec2.rebootInstances(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+				} else {
+					var note = "Reboot requested for instance " + instanceID;
+					addNote(req.query.token, incidentURL, req.query.fromEmail, note);
+				}
+			});
 		});
-	});
-
-	res.end();
-
+	}
+	catch (e) {
+		console.log(e.message);
+	}
+	finally {
+		res.end();
+	}
 });
+
 
 app.post('/whatsapp', function(req, res) {
 	var instance_id = req.query.instance_id;
@@ -281,8 +291,9 @@ app.post('/whatsapp', function(req, res) {
 	};
 	
 	var message = req.body.messages[0];
-	
-	var wa_message = 'Incident "' + message.incident.summary + '" was ' + message_type_strings[message.event] + ' by ' + message.incident.last_status_change_by.summary + ' on service '  + message.incident.service.name + '. View the incident at ' + message.incident.html_url;
+	var wa_message_summary = message.incident.summary.replace(/\\n/g, '\n');
+
+	var wa_message = '*Incident Title:* ' + wa_message_summary + '\n*Event:* ' + message_type_strings[message.event] + '\n*By:* ' + message.incident.last_status_change_by.summary + '\n*Service:* '  + message.incident.service.name + '\n*URL:* ' + message.incident.html_url;
 	
 	var body = {
 		'group_admin': group_admin,
@@ -307,6 +318,63 @@ app.post('/whatsapp', function(req, res) {
 	
 	res.end();
 });
+
+
+app.post('/pingdom', function(req, res) {
+
+	var action = req.query.action;
+	var incident = req.body.messages[0].incident;
+	var token = req.query.token;
+	var user = req.query.user;
+	var pingdom_user = req.query.pingdom_user;
+	var pingdom_pass = req.query.pingdom_pass;
+	var pingdom_token = req.query.pingdom_token;
+	var event = req.body.messages[0].event;
+
+	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
+		console.log("event type: " + event );
+		var pingdom_args, note;
+		if ( action == "pause" || event == 'incident.acknowledge' ) {
+			console.log("pause the check");
+			pingdom_args = "paused=true";
+			agent = req.body.messages[0].log_entries[0].agent.summary ? req.body.messages[0].log_entries[0].agent.summary : "unknown";
+			note = "Paused pingdom check " + logEntry.log_entry.channel.incident_key + " because the incident was acknowledged by " + agent + ". Will unpause when the incident is resolved.";
+		} else if ( action == "unpause" || event == 'incident.resolve' ) {
+			console.log("unpause the check");
+			pingdom_args = "paused=false";
+			agent = req.body.messages[0].log_entries[0].agent.summary ? req.body.messages[0].log_entries[0].agent.summary : "unknown";
+			note = "Unpaused pingdom check " + logEntry.log_entry.channel.incident_key + " because the incident was resolved by " + agent + ".";
+		} else {
+			res.end();
+			return;
+		}
+
+		var options = {
+			auth: {
+				user: pingdom_user,
+				pass: pingdom_pass
+			},
+			headers: { 
+				"App-Key": pingdom_token
+			},
+			uri: "https://api.pingdom.com/api/2.0/checks/" + logEntry.log_entry.channel.incident_key + "?" + pingdom_args,
+			method: "PUT"
+		};
+		
+		request(options, function(error, response, body) {
+			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+			} else {
+				if ( user ) {
+					addNote(token, incident.self, user, note);
+				}
+			}
+		});	
+	});
+
+	res.end();
+});
+
 
 
 app.listen(app.get('port'), function() {
