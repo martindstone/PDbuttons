@@ -332,7 +332,7 @@ app.post('/pingdom', function(req, res) {
 	var event = req.body.messages[0].event;
 	
 
-	console.log("%j", req.body);
+// 	console.log("%j", req.body);
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log("event type: " + event );
 		var pingdom_args, note;
@@ -340,11 +340,12 @@ app.post('/pingdom', function(req, res) {
 			console.log("pause the check");
 			pingdom_args = "paused=true";
 			agent = req.body.messages[0].log_entries[0].agent.summary ? req.body.messages[0].log_entries[0].agent.summary : "unknown";
-			note = "Paused check " + logEntry.log_entry.channel.incident_key + " because the incident was acknowledged by " + agent + ". Will unpause when the incident is resolved.";
+			note = "Paused pingdom check " + logEntry.log_entry.channel.incident_key + " because the incident was acknowledged by " + agent + ". Will unpause when the incident is resolved.";
 		} else if ( action == "unpause" || event == 'incident.resolve' ) {
 			console.log("unpause the check");
 			pingdom_args = "paused=false";
-			note = "Unpaused check " + logEntry.log_entry.channel.incident_key + " because the incident was resolved.";
+			agent = req.body.messages[0].log_entries[0].agent.summary ? req.body.messages[0].log_entries[0].agent.summary : "unknown";
+			note = "Unpaused pingdom check " + logEntry.log_entry.channel.incident_key + " because the incident was resolved by " + agent + ".";
 		} else {
 			res.end();
 			return;
