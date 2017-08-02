@@ -332,14 +332,14 @@ app.post('/pingdom', function(req, res) {
 	var event = req.body.messages[0].event;
 	
 
-	console.log(req.body);
+	console.log(JSON.stringify(req.body, null, 4));
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log("event type: " + event );
 		var pingdom_args, note;
 		if ( action == "pause" || event == 'incident.acknowledge' ) {
 			console.log("pause the check");
 			pingdom_args = "paused=true";
-			agent = logEntry.log_entry.agent.summary ? logEntry.log_entry.agent.summary : "unknown";
+			agent = reg.body.log_entries[0].agent.summary ? logEntry.log_entry.agent.summary : "unknown";
 			note = "Paused check " + logEntry.log_entry.channel.incident_key + " because the incident was acknowledged by " + agent + ". Will unpause when the incident is resolved.";
 		} else if ( action == "unpause" || event == 'incident.resolve' ) {
 			console.log("unpause the check");
