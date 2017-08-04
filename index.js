@@ -199,6 +199,7 @@ app.post('/awsconsole', function (req, res) {
 		var incidentURL = req.body.messages[0].incident.self;
 		
 		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
+			consle.log("got log entry: %j", logEntry);
 			var region = logEntry.log_entry.channel.cef_details.source_location;
 			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
 			var creds = new AWS.Credentials({
@@ -330,9 +331,7 @@ app.post('/pingdom', function(req, res) {
 	var pingdom_pass = req.query.pingdom_pass;
 	var pingdom_token = req.query.pingdom_token;
 	var event = req.body.messages[0].event;
-	
 
-// 	console.log("%j", req.body);
 	getTriggerLE(token, incident.first_trigger_log_entry.self, function(logEntry) {
 		console.log("event type: " + event );
 		var pingdom_args, note;
@@ -367,7 +366,6 @@ app.post('/pingdom', function(req, res) {
 			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 				console.log("Error requesting from pingdom: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 			} else {
-//				console.log(JSON.stringify(response, null, 4));
 				if ( user ) {
 					addNote(token, incident.self, user, note);
 				}
