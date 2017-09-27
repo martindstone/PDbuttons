@@ -276,6 +276,11 @@ app.post('/awsreboot', function(req, res) {
 	}
 });
 
+app.post('/slack', function (req, res) {
+	var token = req.query.token;
+	console.log(JSON.stringify(req.body, null, 2));
+});
+
 
 app.post('/whatsapp', function(req, res) {
 	var instance_id = req.query.instance_id;
