@@ -32,7 +32,6 @@ var AWS = require('aws-sdk');
 
 app.set('port', (process.env.PORT || 5000));
 
-app.post('/slack', bodyParser.text());
 app.use(bodyParser.json());
 
 function getTriggerLE(token, triggerURL, callback) {
@@ -279,9 +278,9 @@ app.post('/awsreboot', function(req, res) {
 	}
 });
 
-app.post('/slack', function (req, res) {
+app.post('/slack', bodyParser.text(), function (req, res) {
 	var token = req.query.token;
-	console.log("request body: " + console.log(util.inspect(req, {showHidden: false, depth: null})));
+	console.log("request body: " + console.log(util.inspect(req.body, {showHidden: false, depth: null})));
 	res.end("OK");
 });
 
