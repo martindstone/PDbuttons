@@ -279,6 +279,7 @@ app.post('/awsreboot', function(req, res) {
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
 	console.log(JSON.stringify(req.body, null, 2));
+	res.end("OK");
 });
 
 
