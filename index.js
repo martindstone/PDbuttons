@@ -4,6 +4,8 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
+const util = require('util');
+
 var token;
 
 var request = require('request');
@@ -279,7 +281,7 @@ app.post('/awsreboot', function(req, res) {
 
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
-	console.log("request body: " + req.body);
+	console.log("request body: " + console.log(util.inspect(req, {showHidden: false, depth: null})));
 	res.end("OK");
 });
 
