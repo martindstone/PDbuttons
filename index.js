@@ -30,6 +30,7 @@ var AWS = require('aws-sdk');
 
 app.set('port', (process.env.PORT || 5000));
 
+app.post('/slack', bodyParser.text());
 app.use(bodyParser.json());
 
 function getTriggerLE(token, triggerURL, callback) {
