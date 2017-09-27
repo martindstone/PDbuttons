@@ -282,7 +282,7 @@ app.post('/awsreboot', function(req, res) {
 
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
-	console.log("request body: " + console.log(util.inspect(req.rawBody, {showHidden: false, depth: null})));
+	console.log("request body: " + console.log(util.inspect(req.body, {showHidden: false, depth: null})));
 	res.end("OK");
 });
 
