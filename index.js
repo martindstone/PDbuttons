@@ -32,7 +32,7 @@ var AWS = require('aws-sdk');
 
 app.set('port', (process.env.PORT || 5000));
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
 function getTriggerLE(token, triggerURL, callback) {
 	var options = {
@@ -169,7 +169,7 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 	});	
 }
 
-app.post('/allhands', function (req, res) {
+app.post('/allhands', bodyParser.json(), function (req, res) {
 	token = req.query.token;
 	var requesterID;
 	
@@ -194,7 +194,7 @@ app.post('/allhands', function (req, res) {
 	res.end();
 });
 
-app.post('/awsconsole', function (req, res) {
+app.post('/awsconsole', bodyParser.json(), function (req, res) {
 	
 	try {
 		var incidentTitle = req.body.messages[0].incident.title;
@@ -240,7 +240,7 @@ app.post('/awsconsole', function (req, res) {
 	}
 });
 
-app.post('/awsreboot', function(req, res) {
+app.post('/awsreboot', bodyParser.json(), function(req, res) {
 	try {
 		var incidentURL = req.body.messages[0].incident.self;
 	
@@ -285,7 +285,7 @@ app.post('/slack', bodyParser.text(), function (req, res) {
 });
 
 
-app.post('/whatsapp', function(req, res) {
+app.post('/whatsapp', bodyParser.json(), function(req, res) {
 	var instance_id = req.query.instance_id;
 	var client_id = decodeURIComponent(req.query.client_id);
 	var client_secret = req.query.client_secret;
@@ -329,7 +329,7 @@ app.post('/whatsapp', function(req, res) {
 });
 
 
-app.post('/pingdom', function(req, res) {
+app.post('/pingdom', bodyParser.json(), function(req, res) {
 
 	var action = req.query.action;
 	var incident = req.body.messages[0].incident;
