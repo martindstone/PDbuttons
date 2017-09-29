@@ -282,10 +282,11 @@ app.post('/awsreboot', function(req, res) {
 
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
-	console.log(req.body);
+	console.log("it's a " + typeof req.body);
 	var slack_payload = {};
 	
 	try {
+		console.log(slack_payload.text);
 		slack_payload = JSON.parse(req.body);
 	} catch (e) { 
 		res.end("Oops");
