@@ -172,34 +172,27 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 }
 
 
-function PDRequest(token, endpoint, method, options) {
+function PDRequest(token, endpoint, method, options, callback) {
 
 	var merged = Object.assign({}, {
-		type: method,
+		method: method,
 		dataType: "json",
 		url: "https://api.pagerduty.com/" + endpoint,
 		headers: {
 			"Authorization": "Token token=" + token,
 			"Accept": "application/vnd.pagerduty+json;version=2"
-		},
-		error: function(err) {
-			var alertStr = "Error '" + err.status + " - " + err.statusText + "' while attempting " + method + " request to '" + endpoint + "'";
-			try {
-				alertStr += ": " + err.responseJSON.error.message;
-			} catch (e) {
-				alertStr += ".";
-			}
-			
-			try {
-				alertStr += "\n\n" + err.responseJSON.error.errors.join("\n");
-			} catch (e) {}
-
-			alert(alertStr);
 		}
 	},
 	options);
 
-	request(merged);
+	request(merged, function(err, res, body) {
+		var data;
+		try {
+			data = JSON.parse(body);
+		} catch (e) {
+		}
+		callback(err, data);
+	});
 }
 
 
@@ -216,42 +209,41 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 	var getParams = Object.assign({}, commonParams, params);
 
 	var options = {
-		data: getParams,
-		success: function(data) {
-			var total = data.total;
-			Array.prototype.push.apply(fetchedData, data[endpoint]);
+		data: getParams
+	};
 
-			if ( data.more == true ) {
-				var indexes = [];
-				for ( i = limit; i < total; i += limit ) {
-					indexes.push(Number(i));
-				}
-				indexes.forEach(function(i) {
-					var offset = i;
-					infoFns.push(function(callback) {
-						var options = {
-							data: Object.assign(getParams, { offset: offset }),
-							success: function(data) {
-								Array.prototype.push.apply(fetchedData, data[endpoint]);
-								if (progressCallback) {
-									progressCallback(data.total, fetchedData.length);
-								}
-								callback(null, data);
-							}
+	PDRequest(token, endpoint, "GET", options, function(err, data) {
+		var total = data.total;
+		Array.prototype.push.apply(fetchedData, data[endpoint]);
+
+		if ( data.more == true ) {
+			var indexes = [];
+			for ( i = limit; i < total; i += limit ) {
+				indexes.push(Number(i));
+			}
+			indexes.forEach(function(i) {
+				var offset = i;
+				infoFns.push(function(callback) {
+					var options = {
+						data: Object.assign(getParams, { offset: offset })
+					}
+					PDRequest(token, endpoint, "GET", options, function(err, data) {
+						Array.prototype.push.apply(fetchedData, data[endpoint]);
+						if (progressCallback) {
+							progressCallback(data.total, fetchedData.length);
 						}
-						PDRequest(token, endpoint, "GET", options);
+						callback(null, data);
 					});
 				});
+			});
 
-				async.parallel(infoFns, function(err, results) {
-					callback(fetchedData);
-				});
-			} else {
+			async.parallel(infoFns, function(err, results) {
 				callback(fetchedData);
-			}
+			});
+		} else {
+			callback(fetchedData);
 		}
-	}
-	PDRequest(token, endpoint, "GET", options);
+	});
 }
 
 function fetchServices(token, callback) {
