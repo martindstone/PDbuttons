@@ -171,6 +171,61 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 	});	
 }
 
+function fetch(token, endpoint, params, callback, progressCallback) {
+	var limit = 100;
+	var infoFns = [];
+	var fetchedData = [];
+
+	var commonParams = {
+			total: true,
+			limit: limit
+	};
+
+	var getParams = $.extend(true, {}, params, commonParams);
+
+	var options = {
+		data: getParams,
+		success: function(data) {
+			var total = data.total;
+			Array.prototype.push.apply(fetchedData, data[endpoint]);
+
+			if ( data.more == true ) {
+				var indexes = [];
+				for ( i = limit; i < total; i += limit ) {
+					indexes.push(Number(i));
+				}
+				indexes.forEach(function(i) {
+					var offset = i;
+					infoFns.push(function(callback) {
+						var options = {
+							data: $.extend(true, { offset: offset }, getParams),
+							success: function(data) {
+								Array.prototype.push.apply(fetchedData, data[endpoint]);
+								if (progressCallback) {
+									progressCallback(data.total, fetchedData.length);
+								}
+								callback(null, data);
+							}
+						}
+						PDRequest(getParameterByName('token'), endpoint, "GET", options);
+					});
+				});
+
+				async.parallel(infoFns, function(err, results) {
+					callback(fetchedData);
+				});
+			} else {
+				callback(fetchedData);
+			}
+		}
+	}
+	PDRequest(token, endpoint, "GET", options);
+}
+
+function fetchServices(token, callback) {
+	fetch(token, "services", null, callback);
+}
+
 app.post('/allhands', function (req, res) {
 	token = req.query.token;
 	var requesterID;
@@ -282,13 +337,39 @@ app.post('/awsreboot', function(req, res) {
 
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
-	console.log("it's a " + typeof req.body);
-	var slack_payload = {};
+
 	console.log(util.inspect(req.body, { showHidden: true, depth: null }));
 	
+	
 	console.log(`text is ${req.body.text}`);
+	
+	var text = req.body.text;
+	var re = /(.+?):\s+(.+)/;
+	var split = re.exec(text);
+	
+	if ( split.length < 3 ) {
+		re.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
+		return;
+	}
+	
+	var service_name = split[1];
+	var title = split[2];
+	
+	var service;
 
-	res.end("OK");
+	fetchServices(token, function(services) {
+		services.forEach(function(s) {
+			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
+				service = s;
+			}
+		})
+	});
+	
+	if ( service ) {
+		res.end(`${service_name}: ${service.id}`);
+	} else {
+		res.end(`no service found with name ${service_name}`);
+	}
 });
 
 
