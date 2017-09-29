@@ -285,13 +285,9 @@ app.post('/slack', function (req, res) {
 	console.log("it's a " + typeof req.body);
 	var slack_payload = {};
 	console.log(util.inspect(req.body, { showHidden: true, depth: null }));
-	try {
-//		console.log(slack_payload.text);
-		slack_payload = JSON.parse(req.body);
-	} catch (e) { 
-		res.end("Oops");
-	}
-//	console.log(slack_payload.text);
+	
+	console.log(`text is ${req.body.text}`);
+
 	res.end("OK");
 });
 
