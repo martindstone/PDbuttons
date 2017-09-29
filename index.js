@@ -392,6 +392,7 @@ app.post('/slack', function (req, res) {
 			console.log(`${service_name}: ${service.id}`);
 		} else {
 			res.end(`no service found with name ${service_name}`);
+			return;
 		}
 		
 		var incident = {
@@ -404,7 +405,8 @@ app.post('/slack', function (req, res) {
 				}
 			}
 		};
-		PDRequest(token, "incidents", "POST", { json: incident }, function(err, data) {
+
+		PDRequest(token, "services/" + service.id, "GET", { qs: { "include[]": "integrations" } }, function(err, data) {
 			if (err) {
 				console.log(util.inspect(err, false, null));
 				res.end("oops");
