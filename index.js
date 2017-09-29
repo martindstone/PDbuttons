@@ -181,7 +181,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 			limit: limit
 	};
 
-	var getParams = $.extend(true, {}, params, commonParams);
+	var getParams = Object.assign({}, commonParams, params);
 
 	var options = {
 		data: getParams,
@@ -198,7 +198,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 					var offset = i;
 					infoFns.push(function(callback) {
 						var options = {
-							data: $.extend(true, { offset: offset }, getParams),
+							data: Object.assign(getParams, { offset: offset }),
 							success: function(data) {
 								Array.prototype.push.apply(fetchedData, data[endpoint]);
 								if (progressCallback) {
