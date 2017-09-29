@@ -239,7 +239,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 								callback(null, data);
 							}
 						}
-						PDRequest(getParameterByName('token'), endpoint, "GET", options);
+						PDRequest(token, endpoint, "GET", options);
 					});
 				});
 
