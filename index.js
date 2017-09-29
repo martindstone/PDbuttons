@@ -171,6 +171,38 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 	});	
 }
 
+
+function PDRequest(token, endpoint, method, options) {
+
+	var merged = Object.assign({}, {
+		type: method,
+		dataType: "json",
+		url: "https://api.pagerduty.com/" + endpoint,
+		headers: {
+			"Authorization": "Token token=" + token,
+			"Accept": "application/vnd.pagerduty+json;version=2"
+		},
+		error: function(err) {
+			var alertStr = "Error '" + err.status + " - " + err.statusText + "' while attempting " + method + " request to '" + endpoint + "'";
+			try {
+				alertStr += ": " + err.responseJSON.error.message;
+			} catch (e) {
+				alertStr += ".";
+			}
+			
+			try {
+				alertStr += "\n\n" + err.responseJSON.error.errors.join("\n");
+			} catch (e) {}
+
+			alert(alertStr);
+		}
+	},
+	options);
+
+	request(merged);
+}
+
+
 function fetch(token, endpoint, params, callback, progressCallback) {
 	var limit = 100;
 	var infoFns = [];
