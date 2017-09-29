@@ -348,7 +348,7 @@ app.post('/slack', function (req, res) {
 	var split = re.exec(text);
 	
 	if ( ! split || split.length < 3 ) {
-		re.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
+		res.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
 		return;
 	}
 	
