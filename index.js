@@ -391,6 +391,7 @@ app.post('/slack', function (req, res) {
 
 	fetchServices(token, function(services) {
 		services.forEach(function(s) {
+			console.log(s.summary);
 			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
 				service = s;
 			}
