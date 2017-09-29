@@ -389,11 +389,30 @@ app.post('/slack', function (req, res) {
 			}
 		});
 		if ( service ) {
-			res.end(`${service_name}: ${service.id}`);
+			console.log(`${service_name}: ${service.id}`);
 		} else {
 			res.end(`no service found with name ${service_name}`);
 		}
-
+		
+		var incident = {
+			incident: {
+				type: "incident",
+				title: title,
+				service: {
+					id: service.id,
+					type: "service_reference"
+				}
+			}
+		};
+		PDRequest(token, "incidents", "POST", incident, function(err, data) {
+			if (err) {
+				console.log(util.inspect(err));
+				res.end("oops");
+			} else {
+				console.log(util.inspect(data));
+				res.end("OK");
+			}
+		});
 	});
 	
 });
