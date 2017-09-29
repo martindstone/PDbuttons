@@ -387,14 +387,15 @@ app.post('/slack', function (req, res) {
 			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
 				service = s;
 			}
-		})
+		});
+		if ( service ) {
+			res.end(`${service_name}: ${service.id}`);
+		} else {
+			res.end(`no service found with name ${service_name}`);
+		}
+
 	});
 	
-	if ( service ) {
-		res.end(`${service_name}: ${service.id}`);
-	} else {
-		res.end(`no service found with name ${service_name}`);
-	}
 });
 
 
