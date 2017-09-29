@@ -406,10 +406,10 @@ app.post('/slack', function (req, res) {
 		};
 		PDRequest(token, "incidents", "POST", { json: incident }, function(err, data) {
 			if (err) {
-				console.log(util.inspect(err));
+				console.log(util.inspect(err, false, null));
 				res.end("oops");
 			} else {
-				console.log(util.inspect(data));
+				console.log(util.inspect(data, false, null));
 				res.end("OK");
 			}
 		});
