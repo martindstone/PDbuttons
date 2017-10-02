@@ -410,16 +410,42 @@ app.post('/slack', function (req, res) {
 			if (err) {
 				console.log(util.inspect(err, false, null));
 				res.end("oops, couldn't get service info for " + service.summary);
+				return;
 			} else {
-//				console.log(util.inspect(data, false, null));
 				var integration;
 				data.service.integrations.forEach(function(i) {
 					console.log(i.summary);
 					if ( i.vendor && i.vendor.summary && i.vendor.summary.toLowerCase().indexOf("slack to pagerduty") > -1 ) {
 						console.log(i.integration_key + " is a slack integration");
+						integration = i;
 					}
 				});
-				res.end("OK");
+				
+				if ( ! integration ) {
+					res.end(`Service ${service.summary} was found but does not have a Slack integration.`);
+					return;
+				}
+				
+				var url = `https://events.pagerduty.com/integration/${integration.integration_key}/enqueue`;
+			
+				var options = {
+					headers: { 
+						"Content-type": "application/json",
+						"Accept": "application/vnd.pagerduty+json;version=2"
+/*
+						"Authorization": "Token token=" + token,
+						"From": fromEmail
+*/
+					},
+					uri: url,
+					method: "POST",
+					json: req.body
+				};
+				request(options, function(error, response, body) {
+					if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+					}
+				});
 			}
 		});
 	});
