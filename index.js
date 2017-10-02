@@ -432,10 +432,6 @@ app.post('/slack', function (req, res) {
 					headers: { 
 						"Content-type": "application/json",
 						"Accept": "application/vnd.pagerduty+json;version=2"
-/*
-						"Authorization": "Token token=" + token,
-						"From": fromEmail
-*/
 					},
 					uri: url,
 					method: "POST",
@@ -444,7 +440,11 @@ app.post('/slack', function (req, res) {
 				request(options, function(error, response, body) {
 					if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+						res.end("Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
 					}
+					console.log(util.inspect(body, false, null));
+					res.end("OK");
+					
 				});
 			}
 		});
