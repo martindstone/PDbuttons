@@ -432,7 +432,7 @@ app.post('/slack', function (req, res) {
 						res.end("Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
 					}
 					console.log(util.inspect(body, false, null));
-					res.end(`Successfully triggered an incident in ${service.summary}`.);
+					res.end(`Successfully triggered an incident in ${service.summary}.`);
 					
 				});
 			}
