@@ -411,8 +411,7 @@ app.post('/slack', function (req, res) {
 				console.log(util.inspect(err, false, null));
 				res.end("oops, couldn't get service info for " + service.summary);
 			} else {
-				console.log(util.inspect(data, false, null));
-/*
+//				console.log(util.inspect(data, false, null));
 				var integration;
 				data.service.integrations.forEach(function(i) {
 					console.log(i.summary);
@@ -420,8 +419,6 @@ app.post('/slack', function (req, res) {
 						console.log(i.integration_key + " is a slack integration");
 					}
 				});
-*/
-//				console.log(util.inspect(data, false, null));
 				res.end("OK");
 			}
 		});
