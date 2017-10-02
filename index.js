@@ -415,7 +415,7 @@ app.post('/slack', function (req, res) {
 				var integration;
 				data.service.integrations.forEach(function(i) {
 					console.log(i.summary);
-					if ( i.vendor.summary.toLowerCase().indexOf("slack to pagerduty") > -1 ) {
+					if ( i.vendor && i.vendor.summary && i.vendor.summary.toLowerCase().indexOf("slack to pagerduty") > -1 ) {
 						console.log(i.integration_key + " is a slack integration");
 					}
 				});
