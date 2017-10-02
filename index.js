@@ -383,14 +383,11 @@ app.post('/slack', function (req, res) {
 
 	fetchServices(token, function(services) {
 		services.forEach(function(s) {
-			console.log(s.summary);
 			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
 				service = s;
 			}
 		});
-		if ( service ) {
-			console.log(`${service_name}: ${service.id}`);
-		} else {
+		if ( ! service ) {
 			res.end(`no service found with name ${service_name}`);
 			return;
 		}
@@ -403,7 +400,6 @@ app.post('/slack', function (req, res) {
 			} else {
 				var integration;
 				data.service.integrations.forEach(function(i) {
-					console.log(i.summary);
 					if ( i.vendor && i.vendor.summary && i.vendor.summary.toLowerCase().indexOf("slack to pagerduty") > -1 ) {
 						console.log(i.integration_key + " is a slack integration");
 						integration = i;
@@ -431,8 +427,8 @@ app.post('/slack', function (req, res) {
 						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 						res.end("Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
 					}
-					console.log(util.inspect(body, false, null));
-					res.end(`Successfully triggered an incident in ${service.summary}.`);
+					console.log(`Sent an event to ${service.summary}`);
+					res.end(`Successfully triggered an incident for "${req.body.text}".`);
 					
 				});
 			}
