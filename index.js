@@ -229,7 +229,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 				console.log(`offset: ${offset}`);
 				infoFns.push(function(callback) {
 					var options = {
-						data: Object.assign(getParams, { offset: offset })
+						qs: Object.assign(getParams, { offset: offset })
 					}
 					PDRequest(token, endpoint, "GET", options, function(err, data) {
 						Array.prototype.push.apply(fetchedData, data[endpoint]);
@@ -386,8 +386,9 @@ app.post('/slack', function (req, res) {
 	var service;
 
 	fetchServices(token, function(services) {
-		console.log(`Got ${services.length} services`);
+		console.log(`Got ${services.length} services:`);
 		services.forEach(function(s) {
+			console.log(s.summary);
 			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
 				service = s;
 			}
