@@ -213,6 +213,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 		data: getParams
 	};
 
+	console.log(util.inspect(options, false, null));
 	PDRequest(token, endpoint, "GET", options, function(err, data) {
 		var total = data.total;
 		console.log(`total services: ${total}`);
