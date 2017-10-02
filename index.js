@@ -210,7 +210,7 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 	var getParams = Object.assign({}, commonParams, params);
 
 	var options = {
-		data: getParams
+		qs: getParams
 	};
 
 	console.log(util.inspect(options, false, null));
