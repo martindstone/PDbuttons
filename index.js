@@ -394,17 +394,6 @@ app.post('/slack', function (req, res) {
 			res.end(`no service found with name ${service_name}`);
 			return;
 		}
-		
-		var incident = {
-			incident: {
-				type: "incident",
-				title: title,
-				service: {
-					id: service.id,
-					type: "service_reference"
-				}
-			}
-		};
 
 		PDRequest(token, "services/" + service.id + "?include[]=integrations", "GET", null, function(err, data) {
 			if (err) {
@@ -443,7 +432,7 @@ app.post('/slack', function (req, res) {
 						res.end("Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
 					}
 					console.log(util.inspect(body, false, null));
-					res.end("OK");
+					res.end(`Successfully triggered an incident in ${service.summary}`.);
 					
 				});
 			}
