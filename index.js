@@ -392,10 +392,7 @@ function sendSlackResponse(responseURL, response, in_channel) {
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
 
-	console.log(util.inspect(req.body, { showHidden: true, depth: null }));
-	
-	
-	console.log(`text is ${req.body.text}`);
+	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
 	
 	var text = req.body.text;
 	var re = /(.+?):\s+(.+)/;
