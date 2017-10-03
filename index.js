@@ -456,7 +456,8 @@ app.post('/slackuser', function(req, res) {
 			headers: { 
 				"Content-type": "application/json",
 				"Accept": "application/vnd.pagerduty+json;version=2",
-				"Authorization": "Token token=" + token
+				"Authorization": "Token token=" + token,
+				"From": fromEmail
 			},
 			uri: "https://api.pagerduty.com/incidents",
 			method: "POST",
