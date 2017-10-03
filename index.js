@@ -461,9 +461,11 @@ app.post('/slack', function (req, res) {
 					if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 						sendSlackResponse(responseURL, "Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
+					} else {
+						console.log(`Sent an event to ${service.summary}`);
+						console.log(util.inspect(body, false, null));
+						sendSlackResponse(responseURL, `Successfully triggered an incident for "${req.body.text}" on service ${service.summary}.`);
 					}
-					console.log(`Sent an event to ${service.summary}`);
-					sendSlackResponse(responseURL, `Successfully triggered an incident for "${req.body.text}".`);
 				});
 			}
 		});
