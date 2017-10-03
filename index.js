@@ -432,6 +432,7 @@ app.post('/slackuser', function(req, res) {
 		var user;
 		
 		users.forEach(function(u) {
+			console.log(u.email);
 			if ( u.summary.toLowerCase() == user_name.toLowerCase() || u.email.toLowerCase() == user_name.toLowerCase() ) {
 				user = u;
 			}
