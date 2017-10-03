@@ -432,7 +432,6 @@ app.post('/slackuser', function(req, res) {
 		var user;
 		
 		users.forEach(function(u) {
-			console.log(u.email.toLowerCase() + " == " + user_name.toLowerCase());
 			if ( u.summary.toLowerCase() == user_name.toLowerCase() || u.email.toLowerCase() == user_name.toLowerCase() ) {
 				user = u;
 			}
@@ -458,7 +457,11 @@ app.post('/slackuser', function(req, res) {
 							type: "user_reference"
 						}
 					}
-				]
+				],
+				body: {
+					type: "incident_body",
+					details: `Incident opened via Slack command invoked by @${req.body.user_name} - Chat link: https://www.slack.com/messages/@${req.body.user_name}`
+				}
 			}
 		};
 		var options = {
