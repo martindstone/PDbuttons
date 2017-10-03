@@ -460,7 +460,7 @@ app.post('/slackuser', function(req, res) {
 			},
 			uri: "https://api.pagerduty.com/incidents",
 			method: "POST",
-			json: data
+			json: incident
 		};
 		
 		request(options, function(error, response, body) {
