@@ -393,6 +393,8 @@ function sendSlackResponse(responseURL, response, in_channel) {
 
 app.post('/slackuser', function(req, res) {
 	var token = req.query.token;
+	var fromEmail = req.query.from;
+	var service = req.query.service;
 
 	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
 	
@@ -400,6 +402,10 @@ app.post('/slackuser', function(req, res) {
 	var re = /(.+?):\s+(.+)/;
 	var split = re.exec(text);
 	
+	if ( ! token || ! fromEmail || ! service ) {
+		res.end("This command is not configured correctly. Please contact your PagerDuty administrator.");
+	}
+
 	if ( ! split || split.length < 3 ) {
 		res.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
 		return;
@@ -414,8 +420,58 @@ app.post('/slackuser', function(req, res) {
 	var responseURL = req.body.response_url;
 	
 	fetchUsers(token, function(users) {
-		console.log(`got ${users.length} users: `);
-		console.log(util.inspect(users, false, null));
+		console.log(`got ${users.length} users`);
+		var user;
+		
+		users.forEach(function(u) {
+			if ( u.summary.toLowerCase() == user_name.toLowerCase() || u.email.toLowerCase() == user_name.toLowerCase() ) {
+				user = u;
+			}
+		});
+		
+		if ( ! user ) {
+			sendSlackResponse(responseURL, `Couldn't find a user named "${user_name}"`)
+			return;
+		}
+		
+		var incident = {
+			incident: {
+				type: "incident",
+				title: title,
+				service: {
+					id: service,
+					type: "service_reference"
+				},
+				assignments: [
+					{
+						assignee: {
+							id: user.id,
+							type: "user_reference"
+						}
+					}
+				]
+			}
+		};
+		var options = {
+			headers: { 
+				"Content-type": "application/json",
+				"Accept": "application/vnd.pagerduty+json;version=2",
+				"Authorization": "Token token=" + token
+			},
+			uri: "https://api.pagerduty.com/incidents",
+			method: "POST",
+			json: data
+		};
+		
+		request(options, function(error, response, body) {
+			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+				console.log("Error creating incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+			} else {
+				sendSlackResponse(responseURL, body.incident.summary);
+			}
+		});	
+
+		
 	});
 });
 
@@ -470,7 +526,17 @@ app.post('/slack', function (req, res) {
 				});
 				
 				if ( ! integration ) {
-					sendSlackResponse(responseURL, `Service "${service.summary}" (${service.html_url}) was found but does not have a Slack integration.`);
+					var response = {
+						response_type: "ephemeral",
+						text: `Service "${service.summary}" (${service.html_url}) was found but does not have a Slack integration. Please click on the link below and add a "Slack to PagerDuty" integration by clicking on the green "New Integration" button.`,
+						attachments: [
+							{
+								title: service.summary,
+								title_link: service.html_url + "/integrations"
+							}
+						]
+					};
+					sendSlackResponse(responseURL, response);
 					return;
 				}
 				
