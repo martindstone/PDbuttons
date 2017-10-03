@@ -363,12 +363,14 @@ app.post('/awsreboot', function(req, res) {
 	}
 });
 
-function sendSlackResponse(responseURL, responseText, in_channel) {
+function sendSlackResponse(responseURL, response, in_channel) {
 	
-	var response = {
-		response_type: in_channel ? "in_channel" : "ephemeral",
-		text: responseText
-	};
+	if ( typeof response == "string" ) {
+		response = {
+			response_type: in_channel ? "in_channel" : "ephemeral",
+			text: responseText
+		};
+	}
 
 	var options = {
 		headers: {
@@ -464,7 +466,17 @@ app.post('/slack', function (req, res) {
 					} else {
 						console.log(`Sent an event to ${service.summary}`);
 						console.log(util.inspect(body, false, null));
-						sendSlackResponse(responseURL, `Successfully triggered an incident for "${req.body.text}" on service ${service.summary}.`);
+						var response = { 
+							response_type: "in_channel", 
+							text: `Successfully triggered an incident for "${req.body.text}" on service ${service.summary}.`, 
+							attachments: [ 
+								{ 
+									title: "Go to service in PD", 
+									title_link: service.html_url 
+								} 
+							] 
+						}
+						sendSlackResponse(responseURL, response);
 					}
 				});
 			}
