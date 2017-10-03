@@ -418,7 +418,7 @@ app.post('/slackuser', function(req, res) {
 	var title = split[2];
 	
 	var escaped = /<.+\|(.+)>/.exec(user_name);
-	if ( escaped.length == 2 ) {
+	if ( escaped && escaped.length == 2 ) {
 		user_name = escaped[1];
 	}
 
@@ -489,8 +489,6 @@ app.post('/slackuser', function(req, res) {
 				}
 				sendSlackResponse(responseURL, response);			}
 		});	
-
-		
 	});
 });
 
