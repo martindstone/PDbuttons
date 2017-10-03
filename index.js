@@ -363,6 +363,30 @@ app.post('/awsreboot', function(req, res) {
 	}
 });
 
+function sendSlackResponse(responseURL, responseText, in_channel) {
+	
+	var response = {
+		response_type: in_channel ? "in_channel" : "ephemeral",
+		text: responseText
+	};
+
+	var options = {
+		headers: {
+			"Content-type": "application/json"
+		},
+		uri: responseURL,
+		method: "POST",
+		json: response
+	};
+	request(options, function(error, response, body) {
+		if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
+			console.log("Error sending response to " + responseURL + ": " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+		} else {
+			console.log(`Sent an response to ${responseURL}`);
+		}
+	});
+}
+
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
 
@@ -383,6 +407,11 @@ app.post('/slack', function (req, res) {
 	var service_name = split[1];
 	var title = split[2];
 	
+	res.end(`Triggering an incident titled "${title}" on service ${service_name}...`);
+	req.body.text = title;
+	
+	var responseURL = req.body.response_url;
+
 	var service;
 
 	fetchServices(token, function(services) {
@@ -394,14 +423,14 @@ app.post('/slack', function (req, res) {
 			}
 		});
 		if ( ! service ) {
-			res.end(`no service found with name ${service_name}`);
+			sendSlackResponse(responseURL, `no service found with name ${service_name}`);
 			return;
 		}
 
 		PDRequest(token, "services/" + service.id + "?include[]=integrations", "GET", null, function(err, data) {
 			if (err) {
 				console.log(util.inspect(err, false, null));
-				res.end("oops, couldn't get service info for " + service.summary);
+				sendSlackResponse(responseURL, "oops, couldn't get service info for " + service.summary);
 				return;
 			} else {
 				var integration;
@@ -413,7 +442,7 @@ app.post('/slack', function (req, res) {
 				});
 				
 				if ( ! integration ) {
-					res.end(`Service ${service.summary} was found but does not have a Slack integration.`);
+					sendSlackResponse(responseURL, `Service ${service.summary} was found but does not have a Slack integration.`);
 					return;
 				}
 				
@@ -431,11 +460,10 @@ app.post('/slack', function (req, res) {
 				request(options, function(error, response, body) {
 					if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
-						res.end("Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
+						sendSlackResponse(responseURL, "Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
 					}
 					console.log(`Sent an event to ${service.summary}`);
-					res.end(`Successfully triggered an incident for "${req.body.text}".`);
-					
+					sendSlackResponse(responseURL, `Successfully triggered an incident for "${req.body.text}".`);
 				});
 			}
 		});
