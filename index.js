@@ -406,6 +406,8 @@ app.post('/slackuser', function(req, res) {
 	if ( ! token || ! fromEmail || ! service ) {
 		res.end("This command is not configured correctly. Please contact your PagerDuty administrator.");
 	}
+	
+	fromEmail = fromEmail.replace(' ', '+');
 
 	if ( ! split || split.length < 3 ) {
 		res.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
