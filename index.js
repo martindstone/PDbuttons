@@ -399,13 +399,13 @@ app.post('/slackuser', function(req, res) {
 	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
 	console.log(`From ${fromEmail}`);
 	
-	var text = req.body.text;
-	var re = /(.+?):\s+(.+)/;
-	var split = re.exec(text);
-	
 	if ( ! token || ! fromEmail || ! service ) {
 		res.end("This command is not configured correctly. Please contact your PagerDuty administrator.");
 	}
+
+	var text = req.body.text;
+	var re = /(.+?):\s+(.+)/;
+	var split = re.exec(text);
 	
 	fromEmail = fromEmail.replace(' ', '+');
 
@@ -417,6 +417,11 @@ app.post('/slackuser', function(req, res) {
 	var user_name = split[1];
 	var title = split[2];
 	
+	var escaped = /<.+\|(.+)>/.exec(user_name);
+	if ( escaped.length == 2 ) {
+		user_name = split[1];
+	}
+
 	res.end(`Triggering an incident titled "${title}" for user ${user_name}...`);
 	req.body.text = title;
 	
