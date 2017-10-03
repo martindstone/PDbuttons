@@ -384,7 +384,7 @@ function sendSlackResponse(responseURL, response, in_channel) {
 		if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 			console.log("Error sending response to " + responseURL + ": " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
 		} else {
-			console.log(`Sent an response to ${responseURL}`);
+			console.log(`Sent a Slack response to ${responseURL}`);
 		}
 	});
 }
@@ -417,22 +417,20 @@ app.post('/slack', function (req, res) {
 	var service;
 
 	fetchServices(token, function(services) {
-		console.log(`Got ${services.length} services:`);
 		services.forEach(function(s) {
-			console.log(s.summary);
 			if ( s.summary.toLowerCase() == service_name.toLowerCase() ) {
 				service = s;
 			}
 		});
 		if ( ! service ) {
-			sendSlackResponse(responseURL, `no service found with name ${service_name}`);
+			sendSlackResponse(responseURL, `Couldn't find a service named "${service_name}"`);
 			return;
 		}
 
 		PDRequest(token, "services/" + service.id + "?include[]=integrations", "GET", null, function(err, data) {
 			if (err) {
 				console.log(util.inspect(err, false, null));
-				sendSlackResponse(responseURL, "oops, couldn't get service info for " + service.summary);
+				sendSlackResponse(responseURL, `Oops, couldn't get service info for "${service.summary}" (${service.html_url})`);
 				return;
 			} else {
 				var integration;
@@ -444,7 +442,7 @@ app.post('/slack', function (req, res) {
 				});
 				
 				if ( ! integration ) {
-					sendSlackResponse(responseURL, `Service ${service.summary} was found but does not have a Slack integration.`);
+					sendSlackResponse(responseURL, `Service "${service.summary}" (${service.html_url}) was found but does not have a Slack integration.`);
 					return;
 				}
 				
