@@ -467,11 +467,11 @@ app.post('/slack', function (req, res) {
 						console.log(`Sent an event to ${service.summary}`);
 						console.log(util.inspect(body, false, null));
 						var response = { 
-							response_type: "in_channel", 
+							response_type: "ephemeral", 
 							text: `Successfully triggered an incident for "${req.body.text}" on service ${service.summary}.`, 
 							attachments: [ 
 								{ 
-									title: "Go to service in PD", 
+									title: "View the incident in PagerDuty", 
 									title_link: service.html_url 
 								} 
 							] 
