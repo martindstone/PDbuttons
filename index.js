@@ -397,6 +397,7 @@ app.post('/slackuser', function(req, res) {
 	var service = req.query.service;
 
 	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
+	console.log(`From ${fromEmail}`);
 	
 	var text = req.body.text;
 	var re = /(.+?):\s+(.+)/;
