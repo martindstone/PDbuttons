@@ -252,6 +252,10 @@ function fetchServices(token, callback) {
 	fetch(token, "services", null, callback);
 }
 
+function fetchUsers(token, callback) {
+	fetch(token, "users", null, callback);
+}
+
 app.post('/allhands', function (req, res) {
 	token = req.query.token;
 	var requesterID;
@@ -387,6 +391,35 @@ function sendSlackResponse(responseURL, response, in_channel) {
 	});
 }
 
+app.post('/slackuser', function(req, res) {
+	var token = req.query.token;
+
+	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
+	
+	var text = req.body.text;
+	var re = /(.+?):\s+(.+)/;
+	var split = re.exec(text);
+	
+	if ( ! split || split.length < 3 ) {
+		res.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
+		return;
+	}
+	
+	var user_name = split[1];
+	var title = split[2];
+	
+	res.end(`Triggering an incident titled "${title}" for user ${user_name}...`);
+	req.body.text = title;
+	
+	var responseURL = req.body.response_url;
+	
+	fetchUsers(token, function(users) {
+		console.log(`got ${users.length} users: `);
+		console.log(util.inspect(users, false, null));
+	});
+});
+
+
 app.post('/slack', function (req, res) {
 	var token = req.query.token;
 
@@ -475,7 +508,6 @@ app.post('/slack', function (req, res) {
 			}
 		});
 	});
-	
 });
 
 
