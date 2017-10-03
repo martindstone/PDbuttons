@@ -368,7 +368,7 @@ function sendSlackResponse(responseURL, response, in_channel) {
 	if ( typeof response == "string" ) {
 		response = {
 			response_type: in_channel ? "in_channel" : "ephemeral",
-			text: responseText
+			text: response
 		};
 	}
 
