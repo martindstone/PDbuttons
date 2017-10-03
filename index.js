@@ -461,7 +461,7 @@ app.post('/slack', function (req, res) {
 						console.log(util.inspect(body, false, null));
 						var response = { 
 							response_type: "ephemeral", 
-							text: `Successfully triggered an incident for "${req.body.text}" on service ${service.summary}.`, 
+							text: `Successfully triggered an incident titled "${req.body.text}" on service ${service.summary}.`, 
 							attachments: [ 
 								{ 
 									title: "View the incident in PagerDuty", 
