@@ -419,7 +419,7 @@ app.post('/slackuser', function(req, res) {
 	
 	var escaped = /<.+\|(.+)>/.exec(user_name);
 	if ( escaped.length == 2 ) {
-		user_name = split[1];
+		user_name = split[1].replace(/[ _]/g, '+');
 	}
 
 	res.end(`Triggering an incident titled "${title}" for user ${user_name}...`);
