@@ -479,7 +479,12 @@ app.post('/slackuser', function(req, res) {
 		request(options, function(error, response, body) {
 			if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
 				console.log("Error creating incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
-				sendSlackResponse(responseURL, `Couldn't create incident - error ${error.statusCode} from PagerDuty incidents endpoint`);
+				try {
+					sendSlackResponse(responseURL, `Couldn't create incident - error ${response.statusCode} from PagerDuty incidents endpoint`);
+				} catch (e) {
+					sendSlackResponse(responseURL, "Couldn't create incident - unknown error from PagerDuty incidents endpoint");
+				}
+
 			} else {
 				var response = { 
 					response_type: "ephemeral", 
