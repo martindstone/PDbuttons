@@ -397,7 +397,6 @@ app.post('/slackuser', function(req, res) {
 	var service = req.query.service;
 
 	console.log(`Got Slack command from ${req.body.user_name}: ${req.body.command} ${req.body.text}`);
-	console.log(`From ${fromEmail}`);
 	
 	if ( ! token || ! fromEmail || ! service ) {
 		res.end("This command is not configured correctly. Please contact your PagerDuty administrator.");
@@ -410,7 +409,7 @@ app.post('/slackuser', function(req, res) {
 	fromEmail = fromEmail.replace(' ', '+');
 
 	if ( ! split || split.length < 3 ) {
-		res.end(`Usage: ${req.body.command} <pd_service_name>: incident title`);
+		res.end(`Usage: ${req.body.command} <pd_user_full_name_or_login_email>: incident title`);
 		return;
 	}
 	
@@ -428,7 +427,6 @@ app.post('/slackuser', function(req, res) {
 	var responseURL = req.body.response_url;
 	
 	fetchUsers(token, function(users) {
-		console.log(`got ${users.length} users`);
 		var user;
 		
 		users.forEach(function(u) {
@@ -540,14 +538,13 @@ app.post('/slack', function (req, res) {
 
 		PDRequest(token, "services/" + service.id + "?include[]=integrations", "GET", null, function(err, data) {
 			if (err) {
-				console.log(util.inspect(err, false, null));
+				console.log("Error getting services: " + util.inspect(err, false, null));
 				sendSlackResponse(responseURL, `Oops, couldn't get service info for "${service.summary}" (${service.html_url})`);
 				return;
 			} else {
 				var integration;
 				data.service.integrations.forEach(function(i) {
 					if ( i.vendor && i.vendor.summary && i.vendor.summary.toLowerCase().indexOf("slack to pagerduty") > -1 ) {
-						console.log(i.integration_key + " is a slack integration");
 						integration = i;
 					}
 				});
@@ -580,8 +577,12 @@ app.post('/slack', function (req, res) {
 				};
 				request(options, function(error, response, body) {
 					if ( ! response.statusCode || response.statusCode < 200 || response.statusCode > 299 ) {
-						console.log("Error triggering incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
-						sendSlackResponse(responseURL, "Couldn't trigger the incident! Please try again or contact your PagerDuty support team.");
+						console.log("Error creating incident: " + error + "\nResponse: " + JSON.stringify(response, null, 2) + "\nBody: " + JSON.stringify(body, null, 2));
+						try {
+							sendSlackResponse(responseURL, `Couldn't trigger the incident - error ${response.statusCode} from PagerDuty events endpoint`);
+						} catch (e) {
+							sendSlackResponse(responseURL, "Couldn't trigger the incident - unknown error from PagerDuty events endpoint");
+						}
 					} else {
 						console.log(`Sent an event to ${service.summary}`);
 						var response = { 
