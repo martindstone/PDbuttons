@@ -224,7 +224,6 @@ function fetch(token, endpoint, params, callback, progressCallback) {
 			}
 			indexes.forEach(function(i) {
 				var offset = i;
-				console.log(`offset: ${offset}`);
 				infoFns.push(function(callback) {
 					var options = {
 						qs: Object.assign(getParams, { offset: offset })
