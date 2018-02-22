@@ -172,7 +172,6 @@ function addResponders(message, targets, incidentID, buttonPusherID) {
 	});	
 }
 
-
 function PDRequest(token, endpoint, method, options, callback) {
 
 	var merged = Object.assign({}, {
@@ -287,7 +286,6 @@ app.post('/awsconsole', function (req, res) {
 		var incidentURL = req.body.messages[0].incident.self;
 		
 		getTriggerLE(req.query.token, req.body.messages[0].incident.first_trigger_log_entry.self, function(logEntry) {
-			console.log("got log entry: %j", logEntry);
 			var region = logEntry.log_entry.channel.cef_details.source_location;
 			var instanceID = logEntry.log_entry.channel.cef_details.source_component;
 			var creds = new AWS.Credentials({
@@ -601,7 +599,6 @@ app.post('/slack', function (req, res) {
 		});
 	});
 });
-
 
 app.post('/whatsapp', function(req, res) {
 	var instance_id = req.query.instance_id;
